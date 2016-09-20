@@ -1,0 +1,800 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>VAR</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-09-20"><meta name="DC.source" content="VAR.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Initialize</a></li><li><a href="#2">Basic calculations</a></li><li><a href="#3">RHS</a></li><li><a href="#4">Sth</a></li></ul></div><h2 id="1">Initialize</h2><pre class="codeinput"><span class="comment">%VAR: Yt = C + A * Yt-1 + Ut</span>
+filename1 = <span class="string">'Ft2.csv'</span>;
+filename2 = <span class="string">'St.csv'</span>;
+Ftx = csvread(filename1,1,1);
+Stx = xlsread(filename2);
+
+<span class="comment">%Column K - N to find Ft (84 rows)</span>
+Ft0 = Ftx(:,10) - Ftx(:,13);
+</pre><h2 id="2">Basic calculations</h2><pre class="codeinput"><span class="comment">%Difference in Ft (2nd row minus 1st row); 83 rows</span>
+dFt = Ft0(2:length(Ft0)) - Ft0(1:length(Ft0)-1);
+<span class="comment">%dFt minus 1 (one period after); 82 rows</span>
+dFt2 = dFt(2:length(dFt));
+<span class="comment">%Re-define dFt as 82 rows (remove last row)</span>
+dFt = dFt(1:length(dFt)-1);
+St = Stx(3:length(Stx));
+Ft = Ft0(3:length(Ft0));
+StFt = St - Ft;
+<span class="comment">%St-1 - Ft-1</span>
+St1Ft1 = Stx(2:length(Stx)-1) - Ft0(2:length(Ft0)-1);
+</pre><h2 id="3">RHS</h2><pre class="codeinput">X = [ones(length(St1Ft1),1),dFt2,St1Ft1];
+Y = dFt
+<span class="comment">%C1 A11 A12</span>
+Z1 = inv(X'*X) * X'*Y
+Y = StFt;
+<span class="comment">%C2 A21 A22</span>
+Z2 = inv(X'*X) * X'*Y
+
+<span class="comment">%C is not important in final results =&gt; ignored</span>
+<span class="comment">%Matrix of A by transposing row 2&amp;3 horizontally</span>
+A = [Z1(2:3)';Z2(2:3)'];
+
+Yt1 = [dFt2'; StFt'];
+
+RHS = 0.9*A*inv(eye(2)-0.9*A)*Yt1;
+RHS = [1,0]*RHS;
+RHS = RHS'
+figure
+plot(RHS')
+figure
+plot(Yt1(2,:))
+time=1:82;
+figure
+plot(time,RHS,time,Yt1(2,:))
+</pre><pre class="codeoutput">
+Y =
+
+   -0.0116
+   -0.0029
+   -0.0142
+   -0.0104
+   -0.0117
+   -0.0245
+   -0.0222
+   -0.0246
+   -0.0180
+   -0.0198
+   -0.0181
+   -0.0163
+   -0.0189
+   -0.0108
+   -0.0196
+   -0.0193
+   -0.0096
+   -0.0163
+   -0.0105
+   -0.0243
+   -0.0162
+   -0.0253
+   -0.0134
+   -0.0047
+   -0.0169
+   -0.0093
+   -0.0142
+   -0.0028
+   -0.0168
+   -0.0044
+   -0.0248
+   -0.0383
+   -0.0451
+   -0.0117
+   -0.0048
+   -0.0029
+    0.0080
+   -0.0091
+   -0.0053
+   -0.0016
+   -0.0053
+   -0.0099
+   -0.0050
+   -0.0155
+   -0.0052
+   -0.0153
+   -0.0099
+   -0.0086
+   -0.0052
+   -0.0080
+    0.0031
+   -0.0046
+   -0.0031
+   -0.0076
+   -0.0030
+    0.0064
+   -0.0070
+    0.0029
+    0.0317
+   -0.0022
+    0.0169
+    0.0043
+    0.0050
+    0.0027
+   -0.0044
+    0.0040
+    0.0045
+   -0.0029
+   -0.0073
+    0.0347
+    0.0071
+    0.0073
+   -0.0031
+    0.0062
+    0.0106
+   -0.0005
+    0.0009
+   -0.0012
+    0.0008
+    0.0149
+    0.0009
+   -0.0086
+
+
+Z1 =
+
+    0.0264
+    0.4054
+   -0.0003
+
+
+Z2 =
+
+   14.7212
+ -156.8390
+    0.8538
+
+
+RHS =
+
+   -0.2306
+   -0.2426
+   -0.2418
+   -0.2063
+   -0.2287
+   -0.2573
+   -0.2712
+   -0.2674
+   -0.2740
+   -0.2796
+   -0.2903
+   -0.3110
+   -0.2786
+   -0.3013
+   -0.3206
+   -0.3151
+   -0.3432
+   -0.2915
+   -0.2888
+   -0.2948
+   -0.3038
+   -0.2601
+   -0.2492
+   -0.2632
+   -0.2609
+   -0.2668
+   -0.2734
+   -0.3050
+   -0.2932
+   -0.3084
+   -0.3490
+   -0.3521
+   -0.2862
+   -0.2926
+   -0.2787
+   -0.2694
+   -0.2852
+   -0.2599
+   -0.2485
+   -0.2557
+   -0.2649
+   -0.2580
+   -0.2569
+   -0.2546
+   -0.2766
+   -0.2774
+   -0.2774
+   -0.2774
+   -0.2775
+   -0.2720
+   -0.2846
+   -0.2795
+   -0.2901
+   -0.2723
+   -0.2436
+   -0.2463
+   -0.2452
+   -0.1979
+   -0.2122
+   -0.2116
+   -0.2148
+   -0.2048
+   -0.2090
+   -0.2221
+   -0.1993
+   -0.1854
+   -0.1956
+   -0.2016
+   -0.1469
+   -0.1708
+   -0.1713
+   -0.1925
+   -0.1771
+   -0.1724
+   -0.2077
+   -0.2261
+   -0.2328
+   -0.2263
+   -0.2247
+   -0.2369
+   -0.2456
+   -0.2492
+
+</pre><img vspace="5" hspace="5" src="VAR_01.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="VAR_02.png" style="width:560px;height:420px;" alt=""> <img vspace="5" hspace="5" src="VAR_03.png" style="width:560px;height:420px;" alt=""> <h2 id="4">Sth</h2><pre class="codeinput">h = 5;
+<span class="comment">%Make matrix for h1 to h5 to store results</span>
+hmat=zeros(length(Stx),5);
+<span class="keyword">while</span> h &gt; 0
+    hmat(1:length(Stx)-h,h) = log(Stx(h+1:length(Stx))) - log(Stx(1:length(Stx)-h));
+    h = h - 1;
+<span class="keyword">end</span>
+h1 = hmat(1:end-1,1)
+h2 = hmat(1:end-2,2)
+h3 = hmat(1:end-3,3)
+h4 = hmat(1:end-4,4)
+h5 = hmat(1:end-5,5)
+</pre><pre class="codeoutput">
+h1 =
+
+   -0.0741
+   -0.0499
+   -0.0009
+    0.0143
+   -0.1757
+    0.0433
+    0.1431
+    0.0476
+    0.0136
+    0.0184
+    0.0291
+    0.0478
+    0.0635
+   -0.0852
+    0.0481
+    0.0678
+    0.0169
+    0.0663
+   -0.1511
+   -0.0662
+    0.0556
+   -0.0037
+   -0.1188
+   -0.0063
+    0.0031
+    0.0242
+    0.0021
+    0.0731
+    0.0591
+    0.0059
+   -0.0248
+    0.0884
+   -0.0145
+   -0.1036
+    0.0497
+   -0.0420
+    0.0091
+   -0.0101
+   -0.0807
+   -0.0299
+    0.0130
+    0.0169
+   -0.0064
+   -0.0513
+    0.0366
+    0.0434
+    0.0257
+    0.0053
+    0.0137
+   -0.0112
+    0.0243
+    0.0154
+   -0.0127
+    0.0207
+   -0.0468
+   -0.0720
+   -0.0489
+    0.0398
+   -0.0666
+   -0.1037
+    0.0932
+   -0.0471
+   -0.0433
+    0.0081
+    0.0255
+   -0.0658
+   -0.0682
+    0.0109
+    0.0067
+   -0.0485
+   -0.0334
+    0.0042
+    0.0542
+   -0.0289
+    0.0010
+    0.1197
+    0.0932
+    0.0194
+   -0.0193
+    0.0595
+   -0.0126
+   -0.0070
+    0.0600
+
+
+h2 =
+
+   -0.1240
+   -0.0509
+    0.0133
+   -0.1614
+   -0.1324
+    0.1864
+    0.1906
+    0.0612
+    0.0320
+    0.0475
+    0.0768
+    0.1112
+   -0.0217
+   -0.0371
+    0.1159
+    0.0846
+    0.0832
+   -0.0847
+   -0.2173
+   -0.0106
+    0.0519
+   -0.1225
+   -0.1251
+   -0.0032
+    0.0273
+    0.0263
+    0.0753
+    0.1322
+    0.0649
+   -0.0189
+    0.0637
+    0.0739
+   -0.1181
+   -0.0539
+    0.0077
+   -0.0329
+   -0.0010
+   -0.0907
+   -0.1106
+   -0.0169
+    0.0298
+    0.0104
+   -0.0578
+   -0.0147
+    0.0800
+    0.0692
+    0.0310
+    0.0190
+    0.0025
+    0.0131
+    0.0396
+    0.0027
+    0.0080
+   -0.0261
+   -0.1188
+   -0.1208
+   -0.0090
+   -0.0268
+   -0.1703
+   -0.0105
+    0.0460
+   -0.0904
+   -0.0352
+    0.0336
+   -0.0403
+   -0.1341
+   -0.0573
+    0.0176
+   -0.0418
+   -0.0818
+   -0.0292
+    0.0584
+    0.0253
+   -0.0279
+    0.1207
+    0.2129
+    0.1126
+    0.0001
+    0.0402
+    0.0468
+   -0.0197
+    0.0529
+
+
+h3 =
+
+   -0.1249
+   -0.0366
+   -0.1624
+   -0.1181
+    0.0107
+    0.2340
+    0.2042
+    0.0796
+    0.0611
+    0.0953
+    0.1403
+    0.0260
+    0.0263
+    0.0306
+    0.1327
+    0.1510
+   -0.0679
+   -0.1510
+   -0.1617
+   -0.0143
+   -0.0668
+   -0.1288
+   -0.1220
+    0.0210
+    0.0294
+    0.0995
+    0.1343
+    0.1381
+    0.0402
+    0.0695
+    0.0492
+   -0.0297
+   -0.0684
+   -0.0959
+    0.0168
+   -0.0430
+   -0.0817
+   -0.1206
+   -0.0976
+   -0.0001
+    0.0234
+   -0.0409
+   -0.0212
+    0.0287
+    0.1058
+    0.0744
+    0.0447
+    0.0078
+    0.0268
+    0.0284
+    0.0270
+    0.0234
+   -0.0388
+   -0.0981
+   -0.1676
+   -0.0810
+   -0.0756
+   -0.1304
+   -0.0771
+   -0.0576
+    0.0027
+   -0.0823
+   -0.0097
+   -0.0322
+   -0.1086
+   -0.1231
+   -0.0507
+   -0.0309
+   -0.0752
+   -0.0776
+    0.0250
+    0.0295
+    0.0263
+    0.0917
+    0.2139
+    0.2323
+    0.0933
+    0.0596
+    0.0276
+    0.0398
+    0.0403
+
+
+h4 =
+
+   -0.1107
+   -0.2123
+   -0.1190
+    0.0250
+    0.0583
+    0.2476
+    0.2226
+    0.1086
+    0.1089
+    0.1587
+    0.0551
+    0.0741
+    0.0941
+    0.0475
+    0.1991
+   -0.0001
+   -0.1341
+   -0.0953
+   -0.1654
+   -0.1331
+   -0.0732
+   -0.1257
+   -0.0978
+    0.0231
+    0.1026
+    0.1585
+    0.1402
+    0.1133
+    0.1286
+    0.0550
+   -0.0545
+    0.0200
+   -0.1104
+   -0.0868
+    0.0067
+   -0.1237
+   -0.1116
+   -0.1077
+   -0.0808
+   -0.0065
+   -0.0279
+   -0.0043
+    0.0223
+    0.0544
+    0.1110
+    0.0881
+    0.0335
+    0.0320
+    0.0421
+    0.0158
+    0.0476
+   -0.0234
+   -0.1108
+   -0.1470
+   -0.1278
+   -0.1476
+   -0.1793
+   -0.0373
+   -0.1243
+   -0.1009
+    0.0108
+   -0.0569
+   -0.0755
+   -0.1005
+   -0.0977
+   -0.1165
+   -0.0991
+   -0.0642
+   -0.0710
+   -0.0234
+   -0.0039
+    0.0305
+    0.1460
+    0.1849
+    0.2333
+    0.2130
+    0.1528
+    0.0470
+    0.0205
+    0.0998
+
+
+h5 =
+
+   -0.2864
+   -0.1690
+    0.0240
+    0.0725
+    0.0719
+    0.2660
+    0.2517
+    0.1564
+    0.1723
+    0.0735
+    0.1032
+    0.1419
+    0.1110
+    0.1138
+    0.0480
+   -0.0663
+   -0.0785
+   -0.0990
+   -0.2841
+   -0.1394
+   -0.0700
+   -0.1015
+   -0.0957
+    0.0963
+    0.1617
+    0.1644
+    0.1154
+    0.2017
+    0.1141
+   -0.0486
+   -0.0048
+   -0.0220
+   -0.1013
+   -0.0969
+   -0.0739
+   -0.1536
+   -0.0986
+   -0.0908
+   -0.0872
+   -0.0578
+    0.0087
+    0.0391
+    0.0480
+    0.0597
+    0.1247
+    0.0769
+    0.0577
+    0.0474
+    0.0295
+    0.0364
+    0.0009
+   -0.0954
+   -0.1596
+   -0.1071
+   -0.1944
+   -0.2513
+   -0.0861
+   -0.0844
+   -0.1676
+   -0.0929
+    0.0363
+   -0.1227
+   -0.1438
+   -0.0896
+   -0.0910
+   -0.1649
+   -0.1325
+   -0.0601
+   -0.0168
+   -0.0523
+   -0.0029
+    0.1501
+    0.2392
+    0.2043
+    0.2140
+    0.2725
+    0.1402
+    0.0399
+    0.0805
+
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Initialize
+%VAR: Yt = C + A * Yt-1 + Ut
+filename1 = 'Ft2.csv';
+filename2 = 'St.csv';
+Ftx = csvread(filename1,1,1);
+Stx = xlsread(filename2);
+
+%Column K - N to find Ft (84 rows)
+Ft0 = Ftx(:,10) - Ftx(:,13);
+
+%% Basic calculations
+%Difference in Ft (2nd row minus 1st row); 83 rows
+dFt = Ft0(2:length(Ft0)) - Ft0(1:length(Ft0)-1);
+%dFt minus 1 (one period after); 82 rows
+dFt2 = dFt(2:length(dFt));
+%Re-define dFt as 82 rows (remove last row)
+dFt = dFt(1:length(dFt)-1);
+St = Stx(3:length(Stx));
+Ft = Ft0(3:length(Ft0));
+StFt = St - Ft;
+%St-1 - Ft-1
+St1Ft1 = Stx(2:length(Stx)-1) - Ft0(2:length(Ft0)-1);
+
+%% RHS
+X = [ones(length(St1Ft1),1),dFt2,St1Ft1];
+Y = dFt
+%C1 A11 A12
+Z1 = inv(X'*X) * X'*Y
+Y = StFt;
+%C2 A21 A22
+Z2 = inv(X'*X) * X'*Y
+
+%C is not important in final results => ignored
+%Matrix of A by transposing row 2&3 horizontally
+A = [Z1(2:3)';Z2(2:3)'];
+
+Yt1 = [dFt2'; StFt'];
+
+RHS = 0.9*A*inv(eye(2)-0.9*A)*Yt1; 
+RHS = [1,0]*RHS;
+RHS = RHS'
+figure
+plot(RHS')
+figure
+plot(Yt1(2,:))
+time=1:82;
+figure
+plot(time,RHS,time,Yt1(2,:))
+
+%% Sth
+h = 5;
+%Make matrix for h1 to h5 to store results
+hmat=zeros(length(Stx),5);
+while h > 0
+    hmat(1:length(Stx)-h,h) = log(Stx(h+1:length(Stx))) - log(Stx(1:length(Stx)-h));
+    h = h - 1;
+end
+h1 = hmat(1:end-1,1)
+h2 = hmat(1:end-2,2)
+h3 = hmat(1:end-3,3)
+h4 = hmat(1:end-4,4)
+h5 = hmat(1:end-5,5)
+##### SOURCE END #####
+--></body></html>
