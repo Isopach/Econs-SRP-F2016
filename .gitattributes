@@ -1,2 +1,2 @@
-html/* linguist-vendored
+special-vendored-path/* linguist-vendored
 VAR.html linguist-vendored=false
